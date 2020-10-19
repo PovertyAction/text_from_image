@@ -70,12 +70,10 @@ def get_first_13_digits_number(text):
                 return first_line_element
 
 def get_ref_n(text):
-
     for line in text.split('\n'):
-        if 'Ref. No.' in line:
-
+        if 'Ref. No' in line:
             #Remove 'ref. no. ' from string
-            ref_n = line.split('Ref. No.')[1].replace(':','').replace(' ','').replace('O','0')
+            ref_n = line.split('Ref. No')[1].replace('.','').replace(',','').replace(':','').replace(' ','').replace('O','0')
 
             #Someimes the number comes in following lines
             if(ref_n == ''):
@@ -87,17 +85,27 @@ def get_ref_n(text):
     #For receipts with blue background
     for line in text.split('\n'):
         if 'GCash Ref Number' in line:
-            print('b')
             ref_n = line.split('GCash Ref Number')[1].replace(':','').replace(' ','').replace('O','0')
             return ref_n
 
     #For receipts with green check on top
     for line in text.split('\n'):
         if 'Recipient' in line:
-            print('c')
             ref_n = line.split('Recipient')[1].replace('O','0')
+            if(ref_n!=""):
+                return ref_n
+
+    #For receipts with number in top
+    for line in text.split('\n'):
+        if 'Sent money to ' in line:
+            ref_n = line.split('Sent money to ')[1].replace('O','0')
             return ref_n
 
+    #Some come with a 'Recipient\niS number' message
+    for line in text.split('\n'):
+        if 'iS' in line:
+            ref_n = line.split('iS ')[1].replace('O','0')
+            return ref_n
 
     #If no Ref No found
     return False
@@ -131,7 +139,6 @@ if __name__ == '__main__':
             # print([file_name, php_value, ref_n, file_name_has_ref_n])
             results.append([file_name, php_value, ref_n, file_name_has_ref_n])
         elif(php_value):
-            print(file_name)
             print([file_name, php_value, ref_n, file_name_has_ref_n])
             results.append([file_name, php_value, ref_n, file_name_has_ref_n])
         else:
