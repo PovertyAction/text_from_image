@@ -60,22 +60,41 @@ def get_php_value(text, file_path=None):
     else:
         return False
 
+def get_first_13_digits_number(text):
+    for line in text.split('\n'):
+        #Take first element of line
+        first_line_element = line.split(' ')[0]
+        if len(first_line_element)==13:
+            #If its indeed a number
+            if(int(first_line_element)):
+                return first_line_element
+
 def get_ref_n(text):
+
     for line in text.split('\n'):
         if 'Ref. No.' in line:
+
             #Remove 'ref. no. ' from string
             ref_n = line.split('Ref. No.')[1].replace(':','').replace(' ','').replace('O','0')
+
+            #Someimes the number comes in following lines
+            if(ref_n == ''):
+                #Look for next line with 13 digits
+                ref_n = get_first_13_digits_number(text)
+
             return ref_n
 
     #For receipts with blue background
     for line in text.split('\n'):
         if 'GCash Ref Number' in line:
+            print('b')
             ref_n = line.split('GCash Ref Number')[1].replace(':','').replace(' ','').replace('O','0')
             return ref_n
 
     #For receipts with green check on top
     for line in text.split('\n'):
         if 'Recipient' in line:
+            print('c')
             ref_n = line.split('Recipient')[1].replace('O','0')
             return ref_n
 
@@ -87,7 +106,7 @@ def get_ref_n(text):
 
 if __name__ == '__main__':
 
-    dir_path = 'test/funcionan'
+    dir_path = 'Receipts'
     files_names = get_all_file_names(dir_path)
 
     results = []
