@@ -67,10 +67,18 @@ def get_ref_n(text):
             ref_n = line.split('Ref. No.')[1].replace(':','').replace(' ','').replace('O','0')
             return ref_n
 
-        #For receipts with blue background
-        elif 'GCash Ref Number' in line:
+    #For receipts with blue background
+    for line in text.split('\n'):
+        if 'GCash Ref Number' in line:
             ref_n = line.split('GCash Ref Number')[1].replace(':','').replace(' ','').replace('O','0')
             return ref_n
+
+    #For receipts with green check on top
+    for line in text.split('\n'):
+        if 'Recipient' in line:
+            ref_n = line.split('Recipient')[1].replace('O','0')
+            return ref_n
+
 
     #If no Ref No found
     return False
@@ -79,7 +87,7 @@ def get_ref_n(text):
 
 if __name__ == '__main__':
 
-    dir_path = 'Receipts'
+    dir_path = 'test/funcionan'
     files_names = get_all_file_names(dir_path)
 
     results = []
@@ -100,7 +108,11 @@ if __name__ == '__main__':
         file_name_has_ref_n = ref_n and ref_n in file_name
 
 
-        if(php_value):
+        if(php_value and ref_n):
+            # print([file_name, php_value, ref_n, file_name_has_ref_n])
+            results.append([file_name, php_value, ref_n, file_name_has_ref_n])
+        elif(php_value):
+            print(file_name)
             print([file_name, php_value, ref_n, file_name_has_ref_n])
             results.append([file_name, php_value, ref_n, file_name_has_ref_n])
         else:
