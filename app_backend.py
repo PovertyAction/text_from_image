@@ -112,44 +112,61 @@ def get_ref_n(text):
 
 
 
-if __name__ == '__main__':
-
-    dir_path = 'Receipts'
-    files_names = get_all_file_names(dir_path)
-
-    results = []
-    files_not_processed = []
-    for index, file_name in enumerate(files_names):
-        print(f'{index}/{len(files_names)}')
-
-        file_path = join(dir_path, file_name)
-        img = Image.open(file_path)
+def process_image(dir_path, file_name):
+    file_path = join(dir_path, file_name)
+    img = Image.open(file_path)
 
 
-        text = pytesseract.image_to_string(img)
+    text = pytesseract.image_to_string(img)
 
-        php_value = get_php_value(text, file_path)
-        ref_n = get_ref_n(text)
-
-
-        file_name_has_ref_n = ref_n and ref_n in file_name
+    php_value = get_php_value(text, file_path)
+    ref_n = get_ref_n(text)
 
 
-        if(php_value and ref_n):
-            # print([file_name, php_value, ref_n, file_name_has_ref_n])
-            results.append([file_name, php_value, ref_n, file_name_has_ref_n])
-        elif(php_value):
-            print([file_name, php_value, ref_n, file_name_has_ref_n])
-            results.append([file_name, php_value, ref_n, file_name_has_ref_n])
-        else:
-            print([file_name, 'Not processed'])
-            files_not_processed.append([file_name])
+    file_name_has_ref_n = ref_n and ref_n in file_name
+
+
+    if(php_value):
+        # print([file_name, php_value, ref_n, file_name_has_ref_n])
+        return [file_name, php_value, ref_n, file_name_has_ref_n]
+    else:
+        return False
+
+def save_df(results, files_not_processed, output_path):
 
     results_df = pd.DataFrame()
     results_df = results_df.append(results)
     results_df.columns=['File_name', 'PHP Value', 'Ref. No.', 'File name matches ref n']
-    results_df_index=0
+    results_df.to_csv(join(output_path,'results.csv'), index=False)
 
-    print(results_df)
-    results_df.to_csv('results.csv', index=False)
-    print(files_not_processed)
+    if len(files_not_processed)>0:
+
+        files_not_processed_df = pd.DataFrame()
+        files_not_processed_df = files_not_processed_df.append(files_not_processed)
+        files_not_processed_df.columns=['File_name']
+        files_not_processed_df.to_csv(join(output_path,'files_not_processed.csv'), index=False)
+
+
+if __name__ == '__main__':
+
+    from tkinter.filedialog import askdirectory
+
+    dir_path = askdirectory()
+
+    files_names = get_all_file_names(dir_path)
+
+    results = []
+    files_not_processed = []
+
+    for index, file_name in enumerate(files_names):
+        print(f'{index+1}/{len(files_names)}')
+        image_processing_result = process_image(dir_path, file_name)
+        # image_number_display.pack_forget()
+
+        if image_processing_result:
+            results.append(image_processing_result)
+        else:
+            files_not_processed.append(file_name)
+
+    #Save results
+    save_df(results, files_not_processed)
